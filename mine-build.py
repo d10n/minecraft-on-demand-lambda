@@ -92,4 +92,4 @@ def lambda_handler(event, context):
     send_discord_message("Starting Server")
     install_terraform()
     apply_terraform_plan(s3_bucket="terraform-minecraft-plan", path="aws.plan")
-    send_discord_message("Server started at minecraft.adamemery.us with minecraft v1.11.2 please allow a few minutes for login to become availible")
+    send_discord_message("Server started at minecraft.adamemery.us with minecraft v1.12 please allow a few minutes for login to become available")
