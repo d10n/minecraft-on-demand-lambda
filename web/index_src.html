@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Minecraft server status page</title>
+    <style>
+      body {
+        width: 500px;
+        min-height: 350px;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #status {
+        display: block;
+        white-space: pre;
+        font-weight: bold;
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 0.025);
+      }
+      #status.offline {
+        background-color: rgba(201, 15, 15, 0.03);
+      }
+      #status.pending {
+        background-color: rgba(234, 234, 15, 0.03);
+      }
+      #status.online {
+        background-color: rgba(12, 214, 29, 0.03);
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+      function deploy() {
+        var el = $('#deploy');
+        el.prop('disabled', true);
+        $('#getStatus').prop('disabled', true);
+        $.post('${lambda_deploy_url}')
+          .then(function(body) {
+            $('#status').text('Deploying.\nPlease wait for about 5 minutes for the server to start.');
+          });
+        setTimeout(function() {
+          $('#getStatus').prop('disabled', false);
+          status();
+        }, 1000 * 60 * 5);
+      }
+      function status() {
+        var el = $('#status');
+        $('#deploy').prop('disabled', true);
+        el.removeClass('offline');
+        el.removeClass('online');
+        el.removeClass('pending');
+        el.text('(checking...)');
+        $.get('${lambda_status_url}')
+          .then(function(body) {
+            if (body.status === 'offline') {
+              $('#deploy').prop('disabled', false);
+              el.addClass('offline');
+              el.text('Not online');
+            }
+            if (body.status === 'online') {
+              $('#deploy').prop('disabled', true);
+              el.addClass('online');
+              var formattedStatus = Object.keys(body)
+                .filter(function(item) { return item !== 'status'; })
+                .map(function(key) { return key + ': ' + JSON.stringify(body[key]); })
+                .join('\n');
+              el.text('Online.\n' + formattedStatus);
+            }
+            if (body.status === 'pending') {
+              $('#deploy').prop('disabled', true);
+              el.addClass('pending');
+              el.text('Pending.\nThe server is starting up.');
+            }
+          });
+      }
+      $(function() {
+        status();
+      })
+    </script>
+  </head>
+
+  <body>
+    <h1>Minecraft server status page</h1>
+    <h2>Control</h2>
+    <button id="deploy" onclick="deploy()" disabled>Deploy</button>
+    <button id="getStatus" onclick="status()">Refresh Status</button>
+    <h2>Status</h2>
+    <p><code id="status"></code></p>
+  </body>
+</html>

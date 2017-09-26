@@ -1,0 +1,11 @@
+{
+  "aws_access_key":              "AKzzFAKEzzzzzZZZZFHA",
+  "aws_secret_key":              "QSzzFAKEzzzzzZZZZd3+dfsJKLSDFj4htjhesjsd",
+  "aws_region":                  "us-east-1",
+  "aws_dynamodb_terraform_lock": "d10n-minecraft-terraform-dynamodb",
+  "aws_s3_terraform_plan":       "d10n-minecraft-terraform-plan",
+  "aws_s3_terraform_state":      "d10n-minecraft-terraform-state",
+  "aws_s3_world_backup":         "d10n-minecraft-world-backup",
+  "discord_client_token":        "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "discord_channel":             "133713371337133713"
+}

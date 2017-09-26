@@ -1,0 +1,14 @@
+/temp/
+/core/minecraft/
+/core/lambda_destroy_deploy.zip
+/core/lambda_status.zip
+/core/terraform.tfstate
+/core/terraform.tfstate.backup
+/instance/terraform.tfvars
+/spigot-build/
+/spigot-bin/
+.terraform/
+/terraform/
+venv/
+/web/index.html
+.env
