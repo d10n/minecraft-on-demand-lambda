@@ -35,6 +35,7 @@ def lambda_handler_status(event, context):
         server = MinecraftServer.lookup(ip + ':25565')
         status = server.status().raw
         status['status'] = 'online'
+        status['host'] = ip
     except AttributeError as exc:
         # silence mcstatus bug:
         # Exception ignored in: <bound method TCPSocketConnection.__del__ of <mcstatus.protocol.connection.TCPSocketConnection object at 0x7fef589619b0>>
