@@ -15,7 +15,7 @@ Requirements:
  * jdk 1.8 (if you want spigot)
  * A terraform ssh key pair:
 
-       ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_terraform
+       ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_minecraft
 
  * Ensure you have awscli credentials configured: http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
  * Copy core/terraform.tfvars.example to core/terraform.tfvars

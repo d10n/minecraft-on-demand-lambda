@@ -7,3 +7,4 @@ variable "aws_s3_terraform_state" {}
 variable "aws_s3_world_backup" {}
 variable "discord_client_token" {}
 variable "discord_channel" {}
+variable "ssh_minecraft_public_key" {}

@@ -60,9 +60,9 @@ resource "aws_s3_bucket_object" "auto_shutoff" {
   etag = "${md5(data.template_file.auto_shutoff.rendered)}"
 }
 
-resource "aws_key_pair" "terraform_minecraft" {
+resource "aws_key_pair" "aws_minecraft_ssh_key" {
   key_name   = "terraform-minecraft-key"
-  public_key = "${file("~/.ssh/id_terraform.pub")}"
+  public_key = "${file("${var.ssh_minecraft_public_key}")}"
 }
 
 resource "aws_api_gateway_rest_api" "minecraft_api" {
@@ -595,7 +595,7 @@ output "aws_eip_id" {
 }
 
 output "aws_key_pair" {
-  value = "${aws_key_pair.terraform_minecraft.id}"
+  value = "${aws_key_pair.aws_minecraft_ssh_key.id}"
 }
 
 output "api_destroy_url" {

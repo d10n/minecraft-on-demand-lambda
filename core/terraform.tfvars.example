@@ -7,5 +7,6 @@
   "aws_s3_terraform_state":      "d10n-minecraft-terraform-state",
   "aws_s3_world_backup":         "d10n-minecraft-world-backup",
   "discord_client_token":        "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "discord_channel":             "133713371337133713"
+  "discord_channel":             "133713371337133713",
+  "ssh_minecraft_public_key":     "~/.ssh/id_minecraft.pub"
 }
