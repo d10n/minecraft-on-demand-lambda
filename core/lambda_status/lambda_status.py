@@ -31,6 +31,17 @@ def lambda_handler_status(event, context):
             'body': """{"status": "Internal Server Error (bad tfvars)"}"""
         }
 
+    status = {'status': 'offline'}
+    try:
+        socket.create_connection((ip, 22), timeout=0.3)
+        status['status'] = 'pending'
+    except (socket.error, socket.timeout, Exception) as exc:
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps(status)
+        }
+
     try:
         server = MinecraftServer.lookup(ip + ':25565')
         status = server.status().raw
@@ -43,17 +54,9 @@ def lambda_handler_status(event, context):
         # File "/var/task/mcstatus/protocol/connection.py", line 153, in __del__
         #     self.socket.close()
         # AttributeError: 'TCPSocketConnection' object has no attribute 'socket'
-        status = {'status': 'offline'}
+        pass
     except Exception as exc:
-        status = {'status': 'offline'}
-
-    if status['status'] == 'offline':
-        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            socket.create_connection((ip, 22), timeout=1)
-            status['status'] = 'pending'
-        except socket.error as exc:
-            pass
+        pass
 
     return {
         'statusCode': 200,
