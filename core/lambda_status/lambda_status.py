@@ -35,6 +35,7 @@ def lambda_handler_status(event, context):
     try:
         socket.create_connection((ip, 22), timeout=1)
         status['status'] = 'pending'
+        status['host'] = ip
     except (socket.error, socket.timeout, Exception) as exc:
         return {
             'statusCode': 200,
