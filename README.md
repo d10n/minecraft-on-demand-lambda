@@ -19,7 +19,7 @@ Requirements:
 
        ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_minecraft
 
- * Ensure you have awscli credentials configured: http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+ * Ensure you have awscli credentials configured: <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>
  * Copy core/terraform.tfvars.example to core/terraform.tfvars and fill in the values.
     * See the variables section below for instructions to get the values.
     * The s3 buckets and dynamodb tables will be created with the supplied names; you don't need to create them manually
@@ -43,7 +43,7 @@ Spigot is used if a spigot jar file is detected in the minecraft world backup s3
 ## Variables
 
 To get the discord client token:
- * Click "New Application" on the Applications page: https://discordapp.com/developers/applications/me
+ * Click "New Application" on the Applications page: <https://discordapp.com/developers/applications/me>
  * Enter a name and click "Create Application"
  * Click "Create Bot User" and click the confirmation button
  * Click the token reveal link
