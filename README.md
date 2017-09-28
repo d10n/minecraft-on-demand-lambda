@@ -102,5 +102,6 @@ For dynamodb and s3 names, any value is fine as long as it hasn't been used by a
 
 ## Notes
 
+ * If you need more RAM, set a bigger instance size than t2.micro in instance.tf and increase Xmx and Xms in provision_minecraft.sh to be a little below the instance size's total allocated RAM
  * The Lambda functions can have bundled dependencies or they can install dependencies when they run. I don't know which I prefer yet and I have both approaches: the destroy and deploy functions install dependencies at runtime, while the status function bundles its dependencies.
  * Terraform 0.10 splits providers out of the main terraform core, but it's possible to build a self-contained bundle with required providers to bundle it with a Lambda function
