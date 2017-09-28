@@ -33,7 +33,7 @@ def lambda_handler_status(event, context):
 
     status = {'status': 'offline'}
     try:
-        socket.create_connection((ip, 22), timeout=0.3)
+        socket.create_connection((ip, 22), timeout=1)
         status['status'] = 'pending'
     except (socket.error, socket.timeout, Exception) as exc:
         return {
