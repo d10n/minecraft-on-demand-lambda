@@ -30,16 +30,36 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script>
+      var deployCooldownTime = null;
+      function getDeployCooldownMessage() {
+        if (deployCooldownTime === null) {
+          return '';
+        }
+        var now = Date.now();
+        var remainingMs = deployCooldownTime - now;
+        if (remainingMs <= 0) {
+          deployCooldownTime = null;
+          return 'If the server does not start shortly, you can try deploying again.';
+        }
+        var remainingMinutes = Math.round(remainingMs / (1000 * 60));
+        if (remainingMinutes > 1) {
+          return 'Please wait for about ' + remainingMinutes + ' minutes for the server to start.';
+        }
+        return 'Please wait for about 1 minute for the server to start.';
+      }
       function deploy() {
-        var el = $('#deploy');
-        el.prop('disabled', true);
+        deployCooldownTime = Date.now() + 1000 * 60 * 5;
+        $('#deploy').prop('disabled', true);
         $('#getStatus').prop('disabled', true);
         $.post('${lambda_deploy_url}')
           .then(function(body) {
-            $('#status').text('Deploying.\nPlease wait for about 5 minutes for the server to start.');
+            $('#status').text('Deploy initialized.\n' + getDeployCooldownMessage());
           });
         setTimeout(function() {
           $('#getStatus').prop('disabled', false);
+        }, 1000 * 2);
+        setTimeout(function() {
+          deployCooldownTime = null;
           status();
         }, 1000 * 60 * 5);
       }
@@ -53,12 +73,15 @@
         $.get('${lambda_status_url}')
           .then(function(body) {
             if (body.status === 'offline') {
-              $('#deploy').prop('disabled', false);
+              if (!deployCooldownTime) {
+                $('#deploy').prop('disabled', false);
+              }
               el.addClass('offline');
-              el.text('Not online');
+              el.text(('Not online.\n' + getDeployCooldownMessage()).trim());
             }
             if (body.status === 'online') {
               $('#deploy').prop('disabled', true);
+              deployCooldownTime = null;
               el.addClass('online');
               var formattedStatus = Object.keys(body)
                 .filter(function(item) { return item !== 'status' && item !== 'host'; })
@@ -69,7 +92,7 @@
             if (body.status === 'pending') {
               $('#deploy').prop('disabled', true);
               el.addClass('pending');
-              el.text('Pending.\nHost: ' + body.host + '\n\nThe server is starting up.');
+              el.text(('Pending.\nHost: ' + body.host + '\n\nThe server is starting up.\n' + getDeployCooldownMessage()).trim());
             }
           });
       }
