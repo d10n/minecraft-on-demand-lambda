@@ -19,7 +19,7 @@ if [[ ! -r minecraft-setup-done ]]; then
 #Tue Sep 19 00:42:15 EDT 2017
 eula=true
 EOF
-    echo -e 'save-all\rsay SERVER RESTARTING\rstop' | java -Xmx1024M -Xms1024M -jar $server_jar nogui
+    echo -e 'save-all\rsay SERVER RESTARTING\rstop' | java -Xmx900M -Xms900M -jar $server_jar nogui
     touch minecraft-setup-done
     aws s3 sync /minecraft/ s3://${aws_s3_world_backup}
 fi
@@ -28,4 +28,4 @@ fi
 { crontab -l; echo "*/5 * * * * python /minecraft/auto_shutoff.py"; } | crontab -
 
 tmux new-session -d -s minecraft -n minecraft
-tmux send-keys -t minecraft:minecraft "java -Xmx1024M -Xms1024M -jar $server_jar nogui" C-m
+tmux send-keys -t minecraft:minecraft "java -Xmx900M -Xms900M -jar $server_jar nogui" C-m
