@@ -6,7 +6,7 @@
     <style>
       body {
         width: 500px;
-        min-height: 350px;
+        min-height: 500px;
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
@@ -61,15 +61,15 @@
               $('#deploy').prop('disabled', true);
               el.addClass('online');
               var formattedStatus = Object.keys(body)
-                .filter(function(item) { return item !== 'status'; })
-                .map(function(key) { return key + ': ' + JSON.stringify(body[key]); })
+                .filter(function(item) { return item !== 'status' && item !== 'host'; })
+                .map(function(key) { return key + ':\n' + JSON.stringify(body[key], null, 2).replace(/^/gm, '  ') + '\n'; })
                 .join('\n');
-              el.text('Online.\n' + formattedStatus);
+              el.text('Online.\nHost: ' + body.host + '\n\n' + formattedStatus);
             }
             if (body.status === 'pending') {
               $('#deploy').prop('disabled', true);
               el.addClass('pending');
-              el.text('Pending.\nThe server is starting up.');
+              el.text('Pending.\nHost: ' + body.host + '\n\nThe server is starting up.');
             }
           });
       }
