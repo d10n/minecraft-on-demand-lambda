@@ -1,5 +1,5 @@
 
-.PHONY: all clean terraform-bundle spigot lambda update info
+.PHONY: all clean terraform-bundle spigot lambda update plan info
 
 all: update
 
@@ -31,6 +31,9 @@ update: lambda
 	cd core && terraform apply
 	cd core && terraform output -json > ../instance/terraform.tfvars
 	cd instance && aws s3 sync --delete . s3://$(shell cat core/terraform.tfvars | python -c 'import sys,json;print(json.load(sys.stdin)[sys.argv[1]])' aws_s3_terraform_plan)
+
+plan: lambda
+	cd core && terraform plan
 
 info:
 	cd core && terraform output

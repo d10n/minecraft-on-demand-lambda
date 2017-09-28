@@ -95,6 +95,7 @@ For dynamodb and s3 names, any value is fine as long as it hasn't been used by a
 
  * `Makefile` has recipes to run all the required setup commands in the right order
     * `make` deploys or updates the core
+    * `make plan` runs `terraform plan` after building the lambda function zip file
     * `make info` shows the variable output from the core deployment
     * `make spigot` compiles spigot and uploads it to your s3 world bucket
     * `make terraform-bundle` compiles a terraform bundle with all provider dependencies included (not currently used)
