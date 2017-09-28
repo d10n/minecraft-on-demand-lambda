@@ -78,6 +78,14 @@ resource "aws_security_group" "allow_all" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Uncomment to open traffic to Dynmap plugin
+  #  ingress {
+  #    from_port   = 8123
+  #    to_port     = 8123
+  #    protocol    = "tcp"
+  #    cidr_blocks = ["0.0.0.0/0"]
+  #  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -157,7 +165,6 @@ data "template_file" "provision_minecraft" {
     aws_s3_world_backup = "${var.aws_s3_world_backup["value"]}"
   }
 }
-
 
 resource "aws_instance" "minecraft" {
   # ami = "ami-b374d5a5"
