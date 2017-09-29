@@ -59,9 +59,8 @@
           $('#getStatus').prop('disabled', false);
         }, 1000 * 2);
         setTimeout(function() {
-          deployCooldownTime = null;
           status();
-        }, 1000 * 60 * 5);
+        }, 1000 * 60 * 5 + 100);
       }
       function status() {
         var el = $('#status');
