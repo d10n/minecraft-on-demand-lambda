@@ -7,6 +7,7 @@ Turnkey solution for on-demand pushbutton minecraft servers
  * Creates a URL that deploys the server
  * Auto shutoff after 30 minutes
  * Backup every 5 minutes
+ * Costs about $4/mo with light usage and with a static Elastic IP, or about $0.30/mo without a static Elastic IP (see notes at bottom)
 
 
 ## Instructions
@@ -103,6 +104,9 @@ For dynamodb and s3 names, any value is fine as long as it hasn't been used by a
 
 ## Notes
 
- * If you need more RAM, set a bigger instance size than t2.micro in instance.tf and increase Xmx and Xms in provision_minecraft.sh to be a little below the instance size's total allocated RAM
+ * If you need more RAM, set a bigger instance size than t2.micro in instance.tf and increase Xmx and Xms in `provision_minecraft.sh` to be a little below the instance size's total allocated RAM
  * The Lambda functions can have bundled dependencies or they can install dependencies when they run. I don't know which I prefer yet and I have both approaches: the destroy and deploy functions install dependencies at runtime, while the status function bundles its dependencies.
  * Terraform 0.10 splits providers out of the main terraform core, but it's possible to build a self-contained bundle with required providers to bundle it with a Lambda function
+ * Elastic IP is a static IP that works across redeploys of the server. Using Elastic IP is convenient to avoid DNS TTL caching, but costs can be lowered by using alternative options:
+    * Route 53 (configure it yourself)
+    * Give the user the IP on the status page for every deploy (comment out all blocks containing "eip" references in `core/core.tf` and `instance/instance.tf`)
