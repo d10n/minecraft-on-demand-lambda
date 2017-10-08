@@ -509,6 +509,7 @@ resource "aws_lambda_function" "minecraft_lambda_status" {
   environment {
     variables = {
       S3_TERRAFORM_PLAN_BUCKET = "${var.aws_s3_terraform_plan}"
+      S3_TERRAFORM_STATE_BUCKET = "${var.aws_s3_terraform_state}"
     }
   }
 

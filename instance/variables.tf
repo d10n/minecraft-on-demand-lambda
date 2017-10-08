@@ -1,5 +1,8 @@
 variable "aws_eip_id" {
   type = "map"
+  default = {
+    value = ""
+  }
 }
 
 variable "aws_key_pair" {
