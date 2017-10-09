@@ -49,6 +49,99 @@ resource "aws_s3_bucket" "minecraft_world_backup" {
   }
 }
 
+resource "aws_s3_bucket" "minecraft_server_dashboard" {
+  bucket = "${var.aws_s3_server_dashboard}"
+  acl    = "public-read"
+
+  policy = <<EOF
+{
+  "Version":"2012-10-17",
+  "Statement":[{
+    "Sid":"PublicReadGetObject",
+    "Effect":"Allow",
+    "Principal": "*",
+    "Action":["s3:GetObject"],
+    "Resource":["arn:aws:s3:::${var.aws_s3_server_dashboard}/*"],
+    "Condition":{
+      "Bool":{
+        "aws:SecureTransport":"true"
+      }
+    }
+  }]
+}
+EOF
+
+  #"Resource":["arn:aws:s3:::example-bucket/*"]
+
+  website {
+    index_document = "index.html"
+
+    #error_document = "error.html"
+  }
+}
+
+resource "aws_s3_bucket_object" "dashboard_index" {
+  bucket       = "${aws_s3_bucket.minecraft_server_dashboard.id}"
+  key          = "index.html"
+  content      = "${data.template_file.dashboard_index.rendered}"
+  content_type = "text/html"
+  etag         = "${md5(data.template_file.dashboard_index.rendered)}"
+}
+
+#resource "aws_s3_bucket_object" "dashboard_error" {
+#  bucket       = "${aws_s3_bucket.minecraft_server_dashboard.id}"
+#  key          = "error.html"
+#  content      = "${data.template_file.dashboard_error.rendered}"
+#  content_type = "text/html"
+#  etag         = "${md5(data.template_file.dashboard_error.rendered)}"
+#}
+
+resource "aws_cloudfront_distribution" "cdn" {
+  origin {
+    origin_id   = "${var.aws_s3_server_dashboard}"
+    domain_name = "${aws_s3_bucket.minecraft_server_dashboard.bucket_domain_name}"
+  }
+
+  # If using route53 aliases for DNS we need to declare it here too, otherwise we'll get 403s.
+  #aliases = ["${var.domain}"]
+
+  enabled             = true
+  default_root_object = "index.html"
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "${var.aws_s3_server_dashboard}"
+
+    forwarded_values {
+      query_string = true
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+  # The cheapest priceclass
+  #price_class = "PriceClass_100"
+
+  # This is required to be specified even if it's not used.
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+      locations        = []
+    }
+  }
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
 resource "aws_s3_bucket_object" "auto_shutoff" {
   bucket = "${aws_s3_bucket.minecraft_world_backup.id}"
   key    = "auto_shutoff.py"
@@ -378,7 +471,7 @@ data "template_file" "auto_shutoff" {
   }
 }
 
-data "template_file" "webpage" {
+data "template_file" "dashboard_index" {
   template = "${file("../web/index_src.html")}"
 
   vars = {
@@ -387,10 +480,24 @@ data "template_file" "webpage" {
   }
 }
 
-resource "local_file" "webpage" {
-  content  = "${data.template_file.webpage.rendered}"
+resource "local_file" "dashboard_index" {
+  content  = "${data.template_file.dashboard_index.rendered}"
   filename = "../web/index.html"
 }
+
+#data "template_file" "dashboard_error" {
+#  template = "${file("../web/error_src.html")}"
+#
+#  vars = {
+#    #https_url = "https://${aws_s3_bucket.minecraft_server_dashboard.bucket_domain_name}/${aws_s3_bucket_object.dashboard_index.key}"
+#    https_url = "https://s3.amazonaws.com/${aws_s3_bucket.minecraft_server_dashboard.id}/${aws_s3_bucket_object.dashboard_index.key}"
+#  }
+#}
+#
+#resource "local_file" "dashboard_error" {
+#  content  = "${data.template_file.dashboard_error.rendered}"
+#  filename = "../web/error.html"
+#}
 
 data "archive_file" "lambda_destroy_deploy_zip" {
   type        = "zip"
@@ -508,7 +615,7 @@ resource "aws_lambda_function" "minecraft_lambda_status" {
 
   environment {
     variables = {
-      S3_TERRAFORM_PLAN_BUCKET = "${var.aws_s3_terraform_plan}"
+      S3_TERRAFORM_PLAN_BUCKET  = "${var.aws_s3_terraform_plan}"
       S3_TERRAFORM_STATE_BUCKET = "${var.aws_s3_terraform_state}"
     }
   }
@@ -609,6 +716,11 @@ output "api_deploy_url" {
 
 output "api_status_url" {
   value = "${aws_api_gateway_deployment.minecraft_api_deployment.invoke_url}${aws_api_gateway_resource.minecraft_api_status.path}"
+}
+
+output "dashboard_url" {
+  #value = "${aws_s3_bucket.minecraft_server_dashboard.website_domain}  ${aws_s3_bucket.minecraft_server_dashboard.website_endpoint}  ${aws_s3_bucket.minecraft_server_dashboard.bucket_domain_name}"
+  value = "https://s3.amazonaws.com/${aws_s3_bucket.minecraft_server_dashboard.id}/${aws_s3_bucket_object.dashboard_index.key}"
 }
 
 output "aws_dynamodb_terraform_lock" {
