@@ -14,6 +14,7 @@ DISCORD_CLIENT_TOKEN = os.environ.get('DISCORD_CLIENT_TOKEN')
 DISCORD_CHANNEL = os.environ.get('DISCORD_CHANNEL')
 
 S3_TERRAFORM_PLAN_BUCKET = os.environ.get('S3_TERRAFORM_PLAN_BUCKET')
+S3_TERRAFORM_STATE_BUCKET = os.environ.get('S3_TERRAFORM_STATE_BUCKET')
 
 MODULE_DIR = '/tmp/python_modules'
 
@@ -198,13 +199,35 @@ def lambda_handler_destroy(event, context):
     }
 
 
-def read_tfvars():
+def read_tfvars_ip():
+    with open('/tmp/terraform_plan/terraform.tfvars') as file:
+        tfvars = json.load(file)
+        return tfvars['ip']['value']
+
+def read_tfstate_ip():
+    with open('/tmp/terraform.tfstate') as file:
+        tfstate = json.load(file)
+        return tfstate['modules'][0]['resources']['aws_instance.minecraft']['primary']['attributes']['public_ip']
+
+def download_instance_remote_state():
+    s3 = boto3.resource('s3')
+    files = [
+        'terraform.tfstate',
+    ]
+    for filename in files:
+        file = s3.Object(S3_TERRAFORM_STATE_BUCKET, filename)
+        file.download_file('/tmp/' + filename)
+
+def get_ip():
     try:
-        with open('/tmp/terraform_plan/terraform.tfvars') as file:
-            tfvars = json.load(file)
-            return tfvars
-    except:
-        return {'ip': {'value': 'minecraft.example.com'}}
+        ip = read_tfvars_ip()
+    except (KeyError, FileNotFoundError) as exc:
+        try:
+            download_instance_remote_state()
+            ip = read_tfstate_ip()
+        except (KeyError, FileNotFoundError) as exc:
+            ip = '[error reading IP]'
+    return ip
 
 
 def lambda_handler_deploy(event, context):
@@ -216,7 +239,7 @@ def lambda_handler_deploy(event, context):
     send_discord_message('Starting Server')
     install_terraform()
     apply_terraform_plan(s3_bucket=S3_TERRAFORM_PLAN_BUCKET)
-    ip = read_tfvars()['ip']['value']
+    ip = get_ip()
     send_discord_message('Server started at {} with Minecraft v1.12.2. Please allow a few minutes for login to become available'.format(ip))
     return {
         'statusCode': 200,

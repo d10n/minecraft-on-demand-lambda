@@ -554,9 +554,10 @@ resource "aws_lambda_function" "minecraft_lambda_deploy" {
 
   environment {
     variables = {
-      DISCORD_CLIENT_TOKEN     = "${var.discord_client_token}"
-      DISCORD_CHANNEL          = "${var.discord_channel}"
-      S3_TERRAFORM_PLAN_BUCKET = "${var.aws_s3_terraform_plan}"
+      DISCORD_CLIENT_TOKEN      = "${var.discord_client_token}"
+      DISCORD_CHANNEL           = "${var.discord_channel}"
+      S3_TERRAFORM_PLAN_BUCKET  = "${var.aws_s3_terraform_plan}"
+      S3_TERRAFORM_STATE_BUCKET = "${var.aws_s3_terraform_state}"
     }
   }
 
@@ -585,9 +586,10 @@ resource "aws_lambda_function" "minecraft_lambda_destroy" {
 
   environment {
     variables = {
-      DISCORD_CLIENT_TOKEN     = "${var.discord_client_token}"
-      DISCORD_CHANNEL          = "${var.discord_channel}"
-      S3_TERRAFORM_PLAN_BUCKET = "${var.aws_s3_terraform_plan}"
+      DISCORD_CLIENT_TOKEN      = "${var.discord_client_token}"
+      DISCORD_CHANNEL           = "${var.discord_channel}"
+      S3_TERRAFORM_PLAN_BUCKET  = "${var.aws_s3_terraform_plan}"
+      S3_TERRAFORM_STATE_BUCKET = "${var.aws_s3_terraform_state}"
     }
   }
 
