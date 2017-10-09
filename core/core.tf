@@ -692,15 +692,15 @@ resource "aws_iam_role" "lambda_minecraft_provision_role" {
 EOF
 }
 
-resource "aws_eip" "ip" {}
-
-output "ip" {
-  value = "${aws_eip.ip.public_ip}"
-}
-
-output "aws_eip_id" {
-  value = "${aws_eip.ip.id}"
-}
+#resource "aws_eip" "ip" {}
+#
+#output "ip" {
+#  value = "${aws_eip.ip.public_ip}"
+#}
+#
+#output "aws_eip_id" {
+#  value = "${aws_eip.ip.id}"
+#}
 
 output "aws_key_pair" {
   value = "${aws_key_pair.aws_minecraft_ssh_key.id}"

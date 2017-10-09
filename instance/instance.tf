@@ -192,11 +192,10 @@ resource "aws_instance" "minecraft" {
   user_data = "${data.template_file.provision_minecraft.rendered}"
 }
 
-resource "aws_eip_association" "eip_association" {
-  # allocation_id = "eipalloc-50076862"
-  allocation_id = "${var.aws_eip_id["value"]}"
-  instance_id   = "${aws_instance.minecraft.id}"
-}
+#resource "aws_eip_association" "eip_association" {
+#  allocation_id = "${var.aws_eip_id["value"]}"
+#  instance_id   = "${aws_instance.minecraft.id}"
+#}
 
 # vim: ts=2 sw=2 et
 
