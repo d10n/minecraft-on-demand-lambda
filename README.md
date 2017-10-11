@@ -108,3 +108,4 @@ For dynamodb and s3 names, any value is fine as long as it hasn't been used by a
  * The Lambda functions can have bundled dependencies or they can install dependencies when they run. I don't know which I prefer yet and I have both approaches: the destroy and deploy functions install dependencies at runtime, while the status function bundles its dependencies.
  * Terraform 0.10 splits providers out of the main terraform core, but it's possible to build a self-contained bundle with required providers to bundle it with a Lambda function
  * Elastic IP is a static IP that works across redeploys of the server. Using Elastic IP is convenient to avoid DNS TTL caching, but it costs extra. Enable by uncommenting all blocks containing "eip" references in `core/core.tf` and `instance/instance.tf`.
+ * Restore from backups using [s3-pit-restore](https://github.com/madisoft/s3-pit-restore)
