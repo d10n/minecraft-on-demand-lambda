@@ -2,6 +2,8 @@
 
 Turnkey solution for on-demand pushbutton minecraft servers
 
+Forked from [aqemery/Terraform-deploy-minecraft](https://github.com/aqemery/Terraform-deploy-minecraft)
+
 ## Features
 
  * Creates a URL that deploys the server
