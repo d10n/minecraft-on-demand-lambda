@@ -5,6 +5,10 @@ yum remove -y java-1.7.0-openjdk
 pip install mcstatus requests
 
 mkdir -p /minecraft
+chown -R ec2-user:ec2-user /minecraft
+
+exec sudo -u ec2-user -i /bin/bash - <<'DROP_PRIVILEGES_EOF'
+
 aws s3 sync s3://${aws_s3_world_backup} /minecraft/
 cd /minecraft
 
@@ -29,3 +33,6 @@ fi
 
 tmux new-session -d -s minecraft -n minecraft
 tmux send-keys -t minecraft:minecraft "java -Xmx900M -Xms900M -jar $server_jar nogui" C-m
+
+DROP_PRIVILEGES_EOF
+
