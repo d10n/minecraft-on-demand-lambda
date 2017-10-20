@@ -32,7 +32,7 @@ fi
 { crontab -l; echo "*/5 * * * * python /minecraft/auto_shutoff.py"; } | crontab -
 
 tmux new-session -d -s minecraft -n minecraft
-tmux send-keys -t minecraft:minecraft "java -Xmx900M -Xms900M -jar $server_jar nogui" C-m
+tmux send-keys -t minecraft:minecraft "while true; do java -Xmx900M -Xms900M -jar $server_jar nogui; sleep 5; done" C-m
 
 DROP_PRIVILEGES_EOF
 
