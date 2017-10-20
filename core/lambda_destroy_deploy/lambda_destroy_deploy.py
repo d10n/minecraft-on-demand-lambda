@@ -19,7 +19,7 @@ S3_TERRAFORM_STATE_BUCKET = os.environ.get('S3_TERRAFORM_STATE_BUCKET')
 MODULE_DIR = '/tmp/python_modules'
 
 # Version of Terraform that we're using
-TERRAFORM_VERSION = '0.10.5'
+TERRAFORM_VERSION = '0.10.7'
 # TERRAFORM_VERSION = '0.9.6'
 
 # Download URL for Terraform
