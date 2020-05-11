@@ -169,7 +169,7 @@ data "template_file" "provision_minecraft" {
 resource "aws_instance" "minecraft" {
   # ami = "ami-b374d5a5"
   ami                    = "${data.aws_ami.amazon_linux.id}"
-  instance_type          = "t2.micro"
+  instance_type          = "t3a.large"
   vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
 
   tags {
