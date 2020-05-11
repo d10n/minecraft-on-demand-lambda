@@ -26,6 +26,7 @@ Requirements:
  * Copy core/terraform.tfvars.example to core/terraform.tfvars and fill in the values.
     * See the variables section below for instructions to get the values.
     * The s3 buckets and dynamodb tables will be created with the supplied names; you don't need to create them manually
+    * Ensure your s3 account settings allows creating public buckets and updating roles
  * Edit the backend variables at the top of instance/instance.tf
 
 Initial setup:
