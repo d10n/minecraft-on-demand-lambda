@@ -1,2 +1,2 @@
-mcstatus==2.2
-requests>=2.20.0
+mcstatus==3.1.0
+requests==2.23.0

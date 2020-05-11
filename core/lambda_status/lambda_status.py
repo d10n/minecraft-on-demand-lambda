@@ -7,6 +7,7 @@ import boto3
 import os
 import subprocess
 import socket
+from botocore.exceptions import ClientError
 
 S3_TERRAFORM_PLAN_BUCKET = os.environ.get('S3_TERRAFORM_PLAN_BUCKET')
 S3_TERRAFORM_STATE_BUCKET = os.environ.get('S3_TERRAFORM_STATE_BUCKET')
@@ -16,24 +17,32 @@ def lambda_handler_status(event, context):
     s3 = boto3.resource('s3')
 
     # Elastic IP
-    files = [
-        'terraform.tfvars',
-    ]
-    for filename in files:
-        file = s3.Object(S3_TERRAFORM_PLAN_BUCKET, filename)
-        file.download_file('/tmp/' + filename)
+    try:
+        files = [
+            'terraform.tfvars.json',
+        ]
+        for filename in files:
+            file = s3.Object(S3_TERRAFORM_PLAN_BUCKET, filename)
+            file.download_file('/tmp/' + filename)
+    except ClientError as exc:
+        pass
 
     # Non-Elastic IP
-    files = [
-        'terraform.tfstate',
-    ]
-    for filename in files:
-        file = s3.Object(S3_TERRAFORM_STATE_BUCKET, filename)
-        file.download_file('/tmp/' + filename)
+    try:
+        files = [
+            'terraform.tfstate',
+        ]
+        for filename in files:
+            file = s3.Object(S3_TERRAFORM_STATE_BUCKET, filename)
+            file.download_file('/tmp/' + filename)
+    except ClientError as exc:
+        pass
 
     ip = None
+    tfstate_ok = None
+    tfvars_ok = None
     try:
-        with open('/tmp/terraform.tfvars') as file:
+        with open('/tmp/terraform.tfvars.json') as file:
             tfvars = json.load(file)
             tfvars_ok = True
             ip = tfvars['ip']['value']
@@ -42,7 +51,9 @@ def lambda_handler_status(event, context):
             with open('/tmp/terraform.tfstate') as file:
                 tfstate = json.load(file)
                 tfstate_ok = True
-                ip = tfstate['modules'][0]['resources']['aws_instance.minecraft']['primary']['attributes']['public_ip']
+                for resource in tfstate['resources']:
+                    if resource['type'] == 'aws_instance' and resource['name'] == 'minecraft':
+                        ip = resource['instances'][0]['attributes']['public_ip']
         except Exception as exc:
             if not (tfvars_ok and tfstate_ok):
                 return {

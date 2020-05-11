@@ -1,19 +1,12 @@
 variable "aws_eip_id" {
-  type = "map"
-
-  default = {
-    value = ""
-  }
+  default = { value = "" }
 }
-
-variable "aws_key_pair" {
-  type = "map"
-}
-
-variable "aws_s3_terraform_state" {
-  type = "map"
-}
-
-variable "aws_s3_world_backup" {
-  type = "map"
-}
+variable "aws_key_pair" {}
+variable "aws_s3_terraform_state" {}
+variable "aws_s3_world_backup" {}
+variable "api_destroy_url" {}
+variable "api_deploy_url" {}
+variable "api_status_url" {}
+variable "aws_dynamodb_terraform_lock" {}
+variable "aws_s3_terraform_plan" {}
+variable "dashboard_url" {}

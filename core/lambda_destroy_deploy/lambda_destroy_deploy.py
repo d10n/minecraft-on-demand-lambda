@@ -8,6 +8,7 @@ import subprocess
 import boto3
 import json
 import errno
+import zipfile
 
 
 DISCORD_CLIENT_TOKEN = os.environ.get('DISCORD_CLIENT_TOKEN')
@@ -19,7 +20,8 @@ S3_TERRAFORM_STATE_BUCKET = os.environ.get('S3_TERRAFORM_STATE_BUCKET')
 MODULE_DIR = '/tmp/python_modules'
 
 # Version of Terraform that we're using
-TERRAFORM_VERSION = '0.10.7'
+TERRAFORM_VERSION = '0.12.24'
+# TERRAFORM_VERSION = '0.10.7'
 # TERRAFORM_VERSION = '0.9.6'
 
 # Download URL for Terraform
@@ -68,8 +70,8 @@ def check_call(args, cwd='/tmp', env=None, always_print=False):
         env=env)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0 or always_print:
-        print(stdout)
-        print(stderr)
+        print(stdout.decode('utf8'))
+        print(stderr.decode('utf8'))
         send_discord_message('Error Building Server')
         raise subprocess.CalledProcessError(
             returncode=proc.returncode,
@@ -91,17 +93,17 @@ def install_terraform():
     with open('/tmp/terraform.zip', 'wb') as f:
         f.write(terraform_zip.content)
 
-    # Flags:
-    #   '-o' = overwrite existing files without prompting
-    #   '-d' = output directory
-    check_call(['unzip', '-o', '/tmp/terraform.zip', '-d', TERRAFORM_DIR])
+    with zipfile.ZipFile('/tmp/terraform.zip', 'r') as zip_ref:
+        zip_ref.extractall(TERRAFORM_DIR)
+    os.chmod(TERRAFORM_PATH, 0o755)
 
 
 def send_discord_message(message):
     client = discord.Client()
     async def async_part():
         await client.login(DISCORD_CLIENT_TOKEN)
-        await client.send_message(discord.Object(id=DISCORD_CHANNEL), message)
+        channel = await client.fetch_channel(DISCORD_CHANNEL)
+        await channel.send(message)
         await client.close()
     client.loop.run_until_complete(async_part())
 
@@ -114,9 +116,7 @@ def install_and_import(package, import_as=None):
     try:
         importlib.import_module(import_as)
     except ImportError:
-        import pip
-        print(pip.__version__)
-        pip.main(['install', '--target', MODULE_DIR, package])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--target', MODULE_DIR, package])
     finally:
         globals()[import_as] = importlib.import_module(import_as)
 
@@ -136,14 +136,14 @@ def apply_terraform_plan(s3_bucket):
     files = [
         'instance.tf',
         'variables.tf',
-        'terraform.tfvars',
+        'terraform.tfvars.json',
         'provision_minecraft.sh',
     ]
     for filename in files:
         file = s3.Object(s3_bucket, filename)
         file.download_file('/tmp/terraform_plan/' + filename)
     check_call([TERRAFORM_PATH, 'init'], cwd='/tmp/terraform_plan')
-    check_call([TERRAFORM_PATH, 'apply'], cwd='/tmp/terraform_plan')
+    check_call([TERRAFORM_PATH, 'apply', '-auto-approve'], cwd='/tmp/terraform_plan')
 
 
 def destroy_terraform_plan(s3_bucket):
@@ -161,14 +161,14 @@ def destroy_terraform_plan(s3_bucket):
     files = [
         'instance.tf',
         'variables.tf',
-        'terraform.tfvars',
+        'terraform.tfvars.json',
         'provision_minecraft.sh',
     ]
     for filename in files:
         file = s3.Object(s3_bucket, filename)
         file.download_file('/tmp/terraform_plan/' + filename)
     check_call([TERRAFORM_PATH, 'init'], cwd='/tmp/terraform_plan')
-    check_call([TERRAFORM_PATH, 'destroy','-force'], cwd='/tmp/terraform_plan')
+    check_call([TERRAFORM_PATH, 'destroy','-auto-approve'], cwd='/tmp/terraform_plan')
 
 
 def is_request_id_duplicate(context):
@@ -200,14 +200,17 @@ def lambda_handler_destroy(event, context):
 
 
 def read_tfvars_ip():
-    with open('/tmp/terraform_plan/terraform.tfvars') as file:
+    with open('/tmp/terraform_plan/terraform.tfvars.json') as file:
         tfvars = json.load(file)
         return tfvars['ip']['value']
 
 def read_tfstate_ip():
     with open('/tmp/terraform.tfstate') as file:
         tfstate = json.load(file)
-        return tfstate['modules'][0]['resources']['aws_instance.minecraft']['primary']['attributes']['public_ip']
+        for resource in tfstate['resources']:
+            if resource['type'] == 'aws_instance' and resource['name'] == 'minecraft':
+                return resource['instances'][0]['attributes']['public_ip']
+    raise AttributeError('could not find ip in config')
 
 def download_instance_remote_state():
     s3 = boto3.resource('s3')
@@ -225,7 +228,8 @@ def get_ip():
         try:
             download_instance_remote_state()
             ip = read_tfstate_ip()
-        except (KeyError, FileNotFoundError) as exc:
+        except (KeyError, FileNotFoundError, AttributeError) as exc:
+            print(exc)
             ip = '[error reading IP]'
     return ip
 
@@ -240,7 +244,7 @@ def lambda_handler_deploy(event, context):
     install_terraform()
     apply_terraform_plan(s3_bucket=S3_TERRAFORM_PLAN_BUCKET)
     ip = get_ip()
-    send_discord_message('Server started at {} with Minecraft v1.12.2. Please allow a few minutes for login to become available'.format(ip))
+    send_discord_message('Server started at {} with Minecraft v1.15.2. Please allow a few minutes for login to become available'.format(ip))
     return {
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json'},

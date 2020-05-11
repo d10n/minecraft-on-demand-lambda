@@ -29,8 +29,8 @@ core/lambda_status.zip: core/lambda_status/lambda_status.py core/lambda_status/r
 
 update: lambda
 	cd core && terraform apply
-	cd core && terraform output -json > ../instance/terraform.tfvars
-	cd instance && aws s3 sync --delete . s3://$(shell cat core/terraform.tfvars | python -c 'import sys,json;print(json.load(sys.stdin)[sys.argv[1]])' aws_s3_terraform_plan)
+	cd core && terraform output -json > ../instance/terraform.tfvars.json
+	cd instance && aws s3 sync --delete . s3://$(shell cat core/terraform.tfvars | awk -vFS='=' '/aws_s3_terraform_plan/{gsub(/[" ]/,"");print $$2}')
 
 plan: lambda
 	cd core && terraform plan
